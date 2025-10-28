@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -13,12 +14,18 @@ export default function LoginPage() {
     // Nanti bisa diganti dengan API call ke backend
     if (email && password) {
       // Simulasi login berhasil
-      console.log("Login berhasil:", { email });
+      toast.success("Login berhasil!", {
+        description: `Selamat datang kembali, ${email}`,
+      });
       
-      // Redirect ke dashboard
-      window.location.href = "/pm/dashboard";
+      // Redirect ke dashboard setelah 1 detik
+      setTimeout(() => {
+        window.location.href = "/pm/dashboard";
+      }, 1000);
     } else {
-      alert("Email dan password harus diisi!");
+      toast.error("Login gagal", {
+        description: "Email dan password harus diisi!",
+      });
     }
   };
 

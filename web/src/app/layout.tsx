@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Script from "next/script";
-import { Toaster } from "sonner";
+import ClientToaster from "@/components/ClientToaster";
 import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="id" className="scroll-smooth">
       <body className={`${inter.className} bg-white text-slate-800 antialiased`}>
         {children}
-        <Toaster richColors closeButton position="top-right" />
+        <ClientToaster />
         
         {/* Google Analytics */}
         <Script

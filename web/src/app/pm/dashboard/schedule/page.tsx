@@ -3,11 +3,23 @@
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useState } from "react";
 
+type Schedule = {
+  id: number;
+  title: string;
+  project: string;
+  date: string;
+  time: string;
+  duration: string;
+  type: string;
+  assignee: string;
+  location: string;
+};
+
 export default function SchedulePage() {
   const [viewMode, setViewMode] = useState<"week" | "month">("week");
 
   // Dummy data
-  const schedules = [
+  const schedules: Schedule[] = [
     { id: 1, title: "Kick-off Meeting Villa Bali", project: "Renovasi Villa Bali", date: "2025-02-01", time: "09:00", duration: "2 jam", type: "meeting", assignee: "Ahmad, Siti", location: "Zoom" },
     { id: 2, title: "Pengecoran Lantai 1", project: "Kantor Jakarta", date: "2025-02-01", time: "07:00", duration: "8 jam", type: "construction", assignee: "Budi, Joko", location: "Site Jakarta" },
     { id: 3, title: "Inspeksi Material", project: "Interior Bandung", date: "2025-02-02", time: "10:00", duration: "3 jam", type: "inspection", assignee: "Rina", location: "Gudang Bandung" },
@@ -37,13 +49,15 @@ export default function SchedulePage() {
   };
 
   // Group schedules by date
-  const groupedSchedules = schedules.reduce((acc, schedule) => {
-    if (!acc[schedule.date]) {
-      acc[schedule.date] = [];
+  const groupedSchedules = schedules.reduce<Record<string, Schedule[]>>((acc, schedule) => {
+    // Safe array initialization using ??= pattern
+    const dateKey = schedule.date;
+    if (!acc[dateKey]) {
+      acc[dateKey] = [];
     }
-    acc[schedule.date].push(schedule);
+    acc[dateKey]!.push(schedule);
     return acc;
-  }, {} as Record<string, typeof schedules>);
+  }, {});
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
