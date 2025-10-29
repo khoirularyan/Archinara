@@ -15,8 +15,8 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Change to web directory
-cd "$(dirname "$0")/web"
+# Change to project root directory
+cd "$(dirname "$0")"
 
 echo "📁 Current directory: $(pwd)"
 echo ""
@@ -151,6 +151,6 @@ echo "3. git push origin main"
 echo "4. Vercel will auto-deploy"
 echo ""
 echo "If Vercel shows 404:"
-echo "- Check Root Directory = web/"
+echo "- Root Directory should be ./"
 echo "- Redeploy with cache cleared"
 echo "- See VERCEL_404_FIX.md for details"

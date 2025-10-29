@@ -3,7 +3,7 @@
 ## Step 1: Install Dependencies
 
 ```bash
-cd /home/khoirul/dev/Archinara/web
+cd /home/khoirul/dev/Archinara
 pnpm add prisma @prisma/client
 pnpm add -D prisma
 ```
