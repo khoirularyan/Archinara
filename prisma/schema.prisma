@@ -1,0 +1,43 @@
+// Prisma Schema untuk Archinara PM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Model
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  role          Role      @default(USER)
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations (akan ditambahkan nanti)
+  // projects      ProjectMember[]
+  // tasks         Task[]
+  // comments      Comment[]
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  ARCHITECT
+}
+
+// TODO: Tambahkan model lainnya sesuai kebutuhan
+// - Project
+// - Task
+// - Document
+// - Team
+// dll
