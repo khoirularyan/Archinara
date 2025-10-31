@@ -105,48 +105,15 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="ml-10 mr-10 mt-5">
-        {/* Header with Search */}
+    <div>
+      <div>
+        {/* Page Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-4xl font-bold text-slate-900">Dashboard</h1>
-              <p className="text-lg text-slate-600 mt-2">
-                Selamat datang kembali, {session?.user?.name}! Berikut ringkasan
-                proyek Anda.
-              </p>
-            </div>
-            {/* Profile Section - Top Right */}
-            <div className="flex items-center">
-              {session?.user && (
-                <Link
-                  href="/pm/profile"
-                  className="flex items-center gap-4 text-gray-700 hover:text-gray-900 transition-colors"
-                >
-                  {session.user.image ? (
-                    <img
-                      src={session.user.image}
-                      alt={session.user.name || "User"}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold shadow-sm text-lg">
-                      {session.user.name?.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <div className="text-right">
-                    <div className="text-lg font-medium">
-                      {session.user.name}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {session.user.role}
-                    </div>
-                  </div>
-                </Link>
-              )}
-            </div>
-          </div>
+          <h1 className="text-4xl font-bold text-slate-900">Dashboard</h1>
+          <p className="text-lg text-slate-600 mt-2">
+            Selamat datang kembali, {session?.user?.name}! Berikut ringkasan
+            proyek Anda.
+          </p>
         </div>
 
         {/* Stats Cards */}
