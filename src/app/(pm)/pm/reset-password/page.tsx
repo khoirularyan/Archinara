@@ -16,7 +16,7 @@ export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const tokenFromUrl = searchParams.get('token');
+    const tokenFromUrl = searchParams.get("token");
     if (tokenFromUrl) {
       setToken(tokenFromUrl);
     } else {
@@ -50,7 +50,9 @@ export default function ResetPasswordPage() {
         throw new Error(data.error || "Terjadi kesalahan");
       }
 
-      setMessage("Password berhasil direset! Anda akan diarahkan ke halaman login.");
+      setMessage(
+        "Password berhasil direset! Anda akan diarahkan ke halaman login."
+      );
 
       // Redirect ke login setelah 3 detik
       setTimeout(() => {
@@ -65,7 +67,7 @@ export default function ResetPasswordPage() {
 
   if (!token && !error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-linear-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-slate-600">Memverifikasi token...</p>
@@ -75,7 +77,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo & Title */}
         <div className="text-center mb-8">
@@ -90,11 +92,23 @@ export default function ResetPasswordPage() {
           {message ? (
             <div className="text-center py-8">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-8 h-8 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Password Diperbarui!</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">
+                Password Diperbarui!
+              </h3>
               <p className="text-slate-600 mb-6">{message}</p>
               <Link
                 href="/pm/login"
@@ -106,11 +120,23 @@ export default function ResetPasswordPage() {
           ) : error ? (
             <div className="text-center py-8">
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-8 h-8 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Link Tidak Valid</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">
+                Link Tidak Valid
+              </h3>
               <p className="text-slate-600 mb-6">{error}</p>
               <Link
                 href="/pm/forgot-password"
@@ -137,7 +163,10 @@ export default function ResetPasswordPage() {
 
                 {/* Password Input */}
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-slate-700 mb-2"
+                  >
                     Password Baru
                   </label>
                   <input
@@ -149,12 +178,17 @@ export default function ResetPasswordPage() {
                     className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                     placeholder="••••••••"
                   />
-                  <p className="text-xs text-slate-500 mt-1">Minimal 6 karakter</p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Minimal 6 karakter
+                  </p>
                 </div>
 
                 {/* Confirm Password Input */}
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 mb-2">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-medium text-slate-700 mb-2"
+                  >
                     Konfirmasi Password
                   </label>
                   <input
@@ -183,7 +217,10 @@ export default function ResetPasswordPage() {
 
         {/* Back to Home */}
         <div className="text-center mt-6">
-          <Link href="/pm" className="text-sm text-slate-600 hover:text-slate-900">
+          <Link
+            href="/pm"
+            className="text-sm text-slate-600 hover:text-slate-900"
+          >
             ← Kembali ke beranda
           </Link>
         </div>

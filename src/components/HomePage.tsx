@@ -2,8 +2,15 @@
 
 import { type RefObject } from "react";
 import { useScrollAnimations, useCarousel } from "@/hooks";
-import { Header, Footer } from "@/components/layout";
-import { Hero, Projects, About, CTA, Testimonials, FAQ } from "@/components/sections";
+import { Header } from "@/components/layout";
+import {
+  Hero,
+  Projects,
+  About,
+  CTA,
+  Testimonials,
+  FAQ,
+} from "@/components/sections";
 
 export default function HomePage() {
   useScrollAnimations();
@@ -18,7 +25,6 @@ export default function HomePage() {
       <CTA />
       <Testimonials carouselRef={carouselRef as RefObject<HTMLDivElement>} />
       <FAQ />
-      <Footer />
     </>
   );
 }

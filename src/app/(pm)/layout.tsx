@@ -1,17 +1,10 @@
-import { PMHeader, PMFooter } from "@/components/layout";
+import Sidebar from "@/components/pm/Sidebar";
 
-export default function PMLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function PMLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <PMHeader />
-      <main className="min-h-screen pt-20">
-        {children}
-      </main>
-      <PMFooter />
+      <Sidebar />
+      <main className="min-h-screen ml-64">{children}</main>
     </>
   );
 }
