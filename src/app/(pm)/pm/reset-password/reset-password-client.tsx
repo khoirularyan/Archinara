@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function ResetPasswordClient() {
+function ResetPasswordForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -67,17 +67,15 @@ export default function ResetPasswordClient() {
 
   if (!token && !error) {
     return (
-      <div className="min-h-screen bg-linear-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Memverifikasi token...</p>
-        </div>
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-slate-600">Memverifikasi token...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-linear-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+    <>
       <div className="w-full max-w-md">
         {/* Logo & Title */}
         <div className="text-center mb-8">
@@ -225,6 +223,21 @@ export default function ResetPasswordClient() {
           </Link>
         </div>
       </div>
+    </>
+  );
+}
+
+export default function ResetPasswordClient() {
+  return (
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+      <Suspense fallback={
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading...</p>
+        </div>
+      }>
+        <ResetPasswordForm />
+      </Suspense>
     </div>
   );
 }
