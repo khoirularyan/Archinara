@@ -8,7 +8,7 @@ export default function PMLayout({
   return (
     <>
       <PMHeader />
-      <main className="min-h-screen">
+      <main className="min-h-screen pt-20">
         {children}
       </main>
       <PMFooter />

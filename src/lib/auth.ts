@@ -45,30 +45,40 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // Return user dengan role
+        // Return user dengan role dan image
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           role: user.role,
+          image: user.image,
         }
       }
     })
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      // Simpan role ke JWT token
+    async jwt({ token, user, trigger, session }) {
+      // Simpan role dan image ke JWT token
       if (user) {
         token.id = user.id
         token.role = user.role
+        token.image = user.image
       }
+      
+      // Update token saat session di-update (untuk profile update)
+      if (trigger === 'update' && session) {
+        token.name = session.name
+        token.image = session.image
+      }
+      
       return token
     },
     async session({ session, token }) {
-      // Tempelin role dan id ke session.user
+      // Tempelin role, id, dan image ke session.user
       if (session?.user && token.sub) {
         session.user.id = token.sub
-        session.user.role = token.role as string
+        session.user.role = token.role as 'ADMIN' | 'MANAGER' | 'ARCHITECT' | 'USER'
+        session.user.image = token.image as string | null
       }
       return session
     }

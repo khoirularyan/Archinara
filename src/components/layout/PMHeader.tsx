@@ -67,9 +67,17 @@ export default function PMHeader() {
                   onClick={() => setShowDropdown(!showDropdown)}
                   className="flex items-center gap-2 text-slate-900 hover:text-slate-700 transition-colors"
                 >
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                    {session.user.name?.charAt(0).toUpperCase()}
-                  </div>
+                  {session.user.image ? (
+                    <img 
+                      src={session.user.image} 
+                      alt={session.user.name || 'User'} 
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                      {session.user.name?.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                   <span className="font-medium hidden md:block">{session.user.name}</span>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -83,7 +91,7 @@ export default function PMHeader() {
                       className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
                       onClick={() => setShowDropdown(false)}
                     >
-                      Profile
+                      Edit Profil
                     </Link>
                     <Link
                       href="/pm/settings"
