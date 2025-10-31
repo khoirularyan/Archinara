@@ -1,6 +1,7 @@
 # Archinara — Modern Architecture Studio Platform
 
 Platform terintegrasi untuk studio arsitektur modern dengan tiga area utama:
+
 - **Marketing Site** (/) - Landing page & portfolio
 - **Archinara PM** (/pm) - Project Management untuk arsitek & manajer
 - **Archinara Work** (/work) - Mobile-first dashboard untuk pekerja lapangan
@@ -17,6 +18,7 @@ Platform terintegrasi untuk studio arsitektur modern dengan tiga area utama:
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js ≥ 18.17
 - pnpm ≥ 9
 - PostgreSQL (atau SQLite untuk development)
@@ -109,6 +111,7 @@ Archinara/
 ## 🎯 Features
 
 ### Marketing Site (`/`)
+
 - 🎨 Modern & responsive design
 - ⚡ Optimized performance
 - 📱 Mobile-first approach
@@ -118,6 +121,7 @@ Archinara/
 - 💬 Testimonials & FAQ
 
 ### Archinara PM (`/pm`)
+
 - 📊 **Project Dashboard** - Overview semua proyek
 - 👥 **Team Collaboration** - Manajemen tim & roles
 - 📁 **Document Management** - Upload & organize files
@@ -127,6 +131,7 @@ Archinara/
 - ⚙️ **Settings** - Konfigurasi project & user
 
 ### Archinara Work (`/work`)
+
 - 📅 **Schedule** - Jadwal harian/mingguan
 - ✅ **Tasks** - Daftar tugas dengan progress tracking
 - 👤 **Attendance** - Absensi dengan GPS/QR (roadmap)
@@ -138,6 +143,7 @@ Archinara/
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **Framework:** Next.js 16 (App Router)
 - **UI Library:** React 19
 - **Language:** TypeScript 5
@@ -148,12 +154,14 @@ Archinara/
 - **Animations:** tw-animate-css
 
 ### Backend
+
 - **API:** Next.js Route Handlers
 - **Database ORM:** Prisma
 - **Database:** PostgreSQL (production) / SQLite (dev)
 - **Authentication:** NextAuth.js (planned)
 
 ### Development
+
 - **Package Manager:** pnpm
 - **Linting:** ESLint
 - **Type Checking:** TypeScript strict mode
@@ -163,30 +171,33 @@ Archinara/
 ## 🔗 Routes
 
 ### Marketing
-| Route | Description |
-|-------|-------------|
-| `/` | Homepage & Portfolio |
+
+| Route | Description          |
+| ----- | -------------------- |
+| `/`   | Homepage & Portfolio |
 
 ### Archinara PM
-| Route | Description |
-|-------|-------------|
-| `/pm` | PM Landing Page |
-| `/pm/login` | Login Page |
-| `/pm/signup` | Sign Up Page |
-| `/pm/dashboard` | PM Dashboard |
-| `/pm/projects` | Project List |
-| `/pm/projects/:id` | Project Detail |
-| `/pm/team` | Team Management |
-| `/pm/settings` | Settings |
+
+| Route              | Description     |
+| ------------------ | --------------- |
+| `/pm`              | PM Landing Page |
+| `/pm/login`        | Login Page      |
+| `/pm/signup`       | Sign Up Page    |
+| `/pm/dashboard`    | PM Dashboard    |
+| `/pm/projects`     | Project List    |
+| `/pm/projects/:id` | Project Detail  |
+| `/pm/team`         | Team Management |
+| `/pm/settings`     | Settings        |
 
 ### Archinara Work
-| Route | Description |
-|-------|-------------|
-| `/work` | Work Dashboard |
-| `/work/schedule` | Schedule View |
-| `/work/tasks` | Task List |
+
+| Route              | Description         |
+| ------------------ | ------------------- |
+| `/work`            | Work Dashboard      |
+| `/work/schedule`   | Schedule View       |
+| `/work/tasks`      | Task List           |
 | `/work/attendance` | Attendance Check-in |
-| `/work/report` | Daily Report |
+| `/work/report`     | Daily Report        |
 
 ## 🚀 Deployment
 
@@ -220,6 +231,7 @@ NEXTAUTH_URL="https://yourdomain.com"
 ## 🗺️ Roadmap
 
 ### Phase 1 (Current)
+
 - [x] Marketing site
 - [x] PM landing page
 - [x] Basic routing structure
@@ -227,18 +239,21 @@ NEXTAUTH_URL="https://yourdomain.com"
 - [ ] Database setup & models
 
 ### Phase 2
+
 - [ ] PM Dashboard implementation
 - [ ] Project management features
 - [ ] Team collaboration
 - [ ] Document upload
 
 ### Phase 3
+
 - [ ] Work dashboard
 - [ ] Schedule & tasks
 - [ ] Attendance system (GPS/QR)
 - [ ] Daily reports
 
 ### Phase 4
+
 - [ ] Budget tracking & BoQ
 - [ ] Analytics & reporting
 - [ ] Mobile app (PWA)
