@@ -1,43 +1,237 @@
-// Prisma Schema untuk Archinara PM
+// ==========================
+// Prisma Schema - Archinara PM
+// ==========================
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL") // aman untuk dev; hapus jika tak dipakai
 }
 
-// User Model
-model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  password      String
-  role          Role      @default(USER)
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Relations (akan ditambahkan nanti)
-  // projects      ProjectMember[]
-  // tasks         Task[]
-  // comments      Comment[]
-
-  @@map("users")
-}
-
+// ==========================
+// Enums
+// ==========================
 enum Role {
   ADMIN
   MANAGER
   ARCHITECT
+  USER
 }
 
-// TODO: Tambahkan model lainnya sesuai kebutuhan
-// - Project
-// - Task
-// - Document
-// - Team
-// dll
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum MemberRole {
+  OWNER
+  MANAGER
+  MEMBER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  COMPLETED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  LEAVE
+}
+
+// ==========================
+// NextAuth Models
+// ==========================
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ==========================
+// Core Models
+// ==========================
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  role          Role      @default(USER)
+  image         String?
+
+  // Password reset
+  resetToken       String?   @unique
+  resetTokenExpiry DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  accounts Account[]
+  sessions Session[]
+  projects ProjectMember[]
+
+  // NOTE: gantikan tasks[] generik dengan dua relasi terpisah
+  tasksAssigned Task[] @relation("TaskAssignee") // Task.assignedTo
+  tasksCreated  Task[] @relation("TaskCreator") // Task.createdBy
+
+  comments    Comment[]
+  attendances Attendance[]
+
+  // Back-relation untuk Document.uploadedBy
+  documentsUploaded Document[] @relation("UploadedDocuments")
+
+  @@map("users")
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  status      ProjectStatus @default(PLANNING)
+  startDate   DateTime?
+  endDate     DateTime?
+  budget      Float?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  members   ProjectMember[]
+  tasks     Task[]
+  documents Document[]
+
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String     @id @default(cuid())
+  projectId String
+  userId    String
+  role      MemberRole @default(MEMBER)
+  joinedAt  DateTime   @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_members")
+}
+
+model Task {
+  id           String     @id @default(cuid())
+  title        String
+  description  String?
+  status       TaskStatus @default(TODO)
+  priority     Priority   @default(MEDIUM)
+  projectId    String
+  assignedToId String?
+  createdById  String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  dueDate      DateTime?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // gunakan nama relasi yang sama di kedua sisi
+  assignedTo User? @relation("TaskAssignee", fields: [assignedToId], references: [id])
+  createdBy  User  @relation("TaskCreator", fields: [createdById], references: [id])
+
+  comments Comment[]
+
+  @@map("tasks")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  taskId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Document {
+  id           String   @id @default(cuid())
+  name         String
+  fileName     String
+  fileSize     Int
+  mimeType     String
+  url          String
+  projectId    String
+  uploadedById String
+  uploadedAt   DateTime @default(now())
+
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadedBy User    @relation("UploadedDocuments", fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  @@map("documents")
+}
+
+model Attendance {
+  id        String           @id @default(cuid())
+  userId    String
+  date      DateTime         @default(now())
+  checkIn   DateTime?
+  checkOut  DateTime?
+  latitude  Float?
+  longitude Float?
+  status    AttendanceStatus @default(PRESENT)
+  notes     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("attendances")
+}

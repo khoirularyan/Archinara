@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -9,36 +11,35 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
     try {
-      // TODO: Implement API call
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false, // Jangan redirect otomatis
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Login gagal");
+      if (result?.error) {
+        setError("Email atau password salah");
+      } else {
+        // Redirect ke dashboard
+        router.push("/pm/dashboard");
       }
-
-      // TODO: Redirect to dashboard
-      console.log("Login success:", data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+    } catch {
+      setError("Terjadi kesalahan saat login");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo & Title */}
         <div className="text-center mb-8">
@@ -60,7 +61,10 @@ export default function LoginPage() {
 
             {/* Email Input */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-slate-700 mb-2"
+              >
                 Email
               </label>
               <input
@@ -76,7 +80,10 @@ export default function LoginPage() {
 
             {/* Password Input */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-slate-700 mb-2"
+              >
                 Password
               </label>
               <input
@@ -93,10 +100,16 @@ export default function LoginPage() {
             {/* Forgot Password Link */}
             <div className="flex items-center justify-between">
               <label className="flex items-center">
-                <input type="checkbox" className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500" />
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                />
                 <span className="ml-2 text-sm text-slate-600">Ingat saya</span>
               </label>
-              <Link href="/pm/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">
+              <Link
+                href="/pm/forgot-password"
+                className="text-sm text-blue-600 hover:text-blue-700"
+              >
                 Lupa password?
               </Link>
             </div>
@@ -125,7 +138,10 @@ export default function LoginPage() {
           <div className="text-center">
             <p className="text-sm text-slate-600">
               Belum punya akun?{" "}
-              <Link href="/pm/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
+              <Link
+                href="/pm/signup"
+                className="text-blue-600 hover:text-blue-700 font-semibold"
+              >
                 Daftar sekarang
               </Link>
             </p>
@@ -134,7 +150,10 @@ export default function LoginPage() {
 
         {/* Back to Home */}
         <div className="text-center mt-6">
-          <Link href="/pm" className="text-sm text-slate-600 hover:text-slate-900">
+          <Link
+            href="/pm"
+            className="text-sm text-slate-600 hover:text-slate-900"
+          >
             ← Kembali ke beranda
           </Link>
         </div>

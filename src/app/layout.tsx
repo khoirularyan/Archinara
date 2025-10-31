@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Script from "next/script";
 import ClientToaster from "@/components/ClientToaster";
+import Providers from "@/components/Providers";
 import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
@@ -13,10 +14,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className="scroll-smooth">
-      <body className={`${inter.className} bg-white text-slate-800 antialiased`}>
-        {children}
-        <ClientToaster />
+    <html lang="id" className="scroll-smooth" suppressHydrationWarning>
+      <body className={`${inter.className} bg-white text-slate-800 antialiased`} suppressHydrationWarning>
+        <Providers>
+          {children}
+          <ClientToaster />
+        </Providers>
         
         {/* Google Analytics */}
         <Script

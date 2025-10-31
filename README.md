@@ -1,119 +1,253 @@
-Archinara — Modern Architecture Studio
+# Archinara — Modern Architecture Studio Platform
 
-Studio arsitektur modern dengan tiga area utama: Marketing site, Archinara PM (manajemen proyek), dan Archinara Work (mobile/PWA untuk lapangan).
+Platform terintegrasi untuk studio arsitektur modern dengan tiga area utama:
+- **Marketing Site** (/) - Landing page & portfolio
+- **Archinara PM** (/pm) - Project Management untuk arsitek & manajer
+- **Archinara Work** (/work) - Mobile-first dashboard untuk pekerja lapangan
 
-<p align="left"> <img alt="Next.js" src="https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs" /> <img alt="React" src="https://img.shields.io/badge/React-19-087EA4?logo=react&logoColor=fff" /> <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=fff" /> <img alt="Tailwind" src="https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?logo=tailwindcss&logoColor=fff" /> <img alt="shadcn/ui" src="https://img.shields.io/badge/shadcn/ui-%20-111827" /> <img alt="pnpm" src="https://img.shields.io/badge/pnpm-10-F69220?logo=pnpm&logoColor=fff" /> </p>
+<p align="left">
+  <img alt="Next.js" src="https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs" />
+  <img alt="React" src="https://img.shields.io/badge/React-19-087EA4?logo=react&logoColor=fff" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=fff" />
+  <img alt="Tailwind" src="https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?logo=tailwindcss&logoColor=fff" />
+  <img alt="Prisma" src="https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma" />
+  <img alt="pnpm" src="https://img.shields.io/badge/pnpm-10-F69220?logo=pnpm&logoColor=fff" />
+</p>
 
-🚀 Quick Start
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js ≥ 18.17
+- pnpm ≥ 9
+- PostgreSQL (atau SQLite untuk development)
+
+### Installation
+
+```bash
+# Clone repository
+git clone <repository-url>
+cd Archinara
 
 # Install dependencies
 pnpm install
 
+# Setup environment variables
+cp env.example .env
+# Edit .env dan sesuaikan DATABASE_URL
+
+# Setup database (opsional, jika sudah ada Prisma schema)
+npx prisma generate
+npx prisma db push
+
 # Run development server
 pnpm dev
+```
 
+Buka [http://localhost:3000](http://localhost:3000) di browser.
+
+### Build & Deploy
+
+```bash
 # Build for production
 pnpm build
 
 # Start production server
 pnpm start
+```
 
-    Requirements: Node.js ≥ 18.17, pnpm ≥ 9.
-    Catatan: Proyek ini menggunakan App Router (Next 16) + Tailwind v4.
+> **Note:** Proyek ini menggunakan Next.js 16 App Router + Tailwind CSS v4
 
-📁 Project Structure
+## 📁 Project Structure
 
-src/app
-├─ (marketing)/           # landing/portfolio
-│  ├─ layout.tsx
-│  └─ page.tsx
-├─ (pm)/                  # Archinara PM (URL: /pm)
-│  ├─ layout.tsx
-│  └─ pm/
-│     ├─ page.tsx
-│     ├─ dashboard/...
-│     ├─ schedule/...
-│     └─ team/...
-├─ (work)/                # Archinara Work (URL: /work)
-│  ├─ layout.tsx
-│  └─ work/
-│     ├─ page.tsx
-│     ├─ schedule/...
-│     ├─ tasks/...
-│     └─ attendance/...
-└─ api/                   # API routes/handlers (pm, work)
+```
+Archinara/
+├── src/
+│   ├── app/
+│   │   ├── (marketing)/      # Marketing site (URL: /)
+│   │   │   ├── layout.tsx
+│   │   │   └── page.tsx
+│   │   ├── (pm)/             # PM Section (URL: /pm/*)
+│   │   │   ├── layout.tsx
+│   │   │   └── pm/
+│   │   │       ├── page.tsx
+│   │   │       ├── dashboard/
+│   │   │       ├── projects/
+│   │   │       ├── team/
+│   │   │       ├── settings/
+│   │   │       ├── login/
+│   │   │       └── signup/
+│   │   ├── (work)/           # Work Section (URL: /work/*)
+│   │   │   ├── layout.tsx
+│   │   │   └── work/
+│   │   │       ├── page.tsx
+│   │   │       ├── schedule/
+│   │   │       ├── tasks/
+│   │   │       ├── attendance/
+│   │   │       └── report/
+│   │   ├── api/              # API Routes
+│   │   │   ├── auth/
+│   │   │   ├── pm/
+│   │   │   └── work/
+│   │   ├── layout.tsx        # Root layout
+│   │   └── globals.css
+│   ├── components/
+│   │   ├── layout/           # Layout components
+│   │   ├── sections/         # Page sections
+│   │   └── ui/               # shadcn/ui components
+│   ├── hooks/                # Custom React hooks
+│   ├── lib/                  # Utilities & helpers
+│   └── types/                # TypeScript types
+├── prisma/
+│   └── schema.prisma         # Database schema
+├── docs/                     # Documentation
+├── public/                   # Static assets
+└── package.json
+```
 
-Lihat docs/APP_STRUCTURE.md
+> **Lihat dokumentasi lengkap:** [docs/APP_STRUCTURE.md](docs/APP_STRUCTURE.md)
 
-🎯 Features
-Marketing Site (/)
+## 🎯 Features
 
-🎨 Modern & responsif
+### Marketing Site (`/`)
+- 🎨 Modern & responsive design
+- ⚡ Optimized performance
+- 📱 Mobile-first approach
+- ♿ Accessibility compliant
+- 🎭 Smooth animations & transitions
+- 📸 Portfolio showcase
+- 💬 Testimonials & FAQ
 
-⚡ Performa dioptimalkan
+### Archinara PM (`/pm`)
+- 📊 **Project Dashboard** - Overview semua proyek
+- 👥 **Team Collaboration** - Manajemen tim & roles
+- 📁 **Document Management** - Upload & organize files
+- 💰 **Budget Tracking** - Monitor pengeluaran proyek
+- 📈 **Reports & Analytics** - Insight performa proyek
+- 🔐 **Authentication** - Login/Signup system
+- ⚙️ **Settings** - Konfigurasi project & user
 
-📱 Mobile-first
+### Archinara Work (`/work`)
+- 📅 **Schedule** - Jadwal harian/mingguan
+- ✅ **Tasks** - Daftar tugas dengan progress tracking
+- 👤 **Attendance** - Absensi dengan GPS/QR (roadmap)
+- 📝 **Daily Report** - Laporan harian pekerjaan
+- 📱 **Mobile-Optimized** - PWA-ready untuk field workers
 
-♿ Aksesibilitas dasar
+> **Status:** Marketing site & PM landing sudah live. Dashboard & Work masih dalam development.
 
-🎭 Animasi halus
+## 🛠️ Tech Stack
 
-Archinara PM (/pm)
+### Frontend
+- **Framework:** Next.js 16 (App Router)
+- **UI Library:** React 19
+- **Language:** TypeScript 5
+- **Styling:** Tailwind CSS 4
+- **Components:** shadcn/ui
+- **Icons:** Lucide React
+- **Notifications:** Sonner
+- **Animations:** tw-animate-css
 
-📊 Dashboard proyek
+### Backend
+- **API:** Next.js Route Handlers
+- **Database ORM:** Prisma
+- **Database:** PostgreSQL (production) / SQLite (dev)
+- **Authentication:** NextAuth.js (planned)
 
-👥 Kolaborasi tim
+### Development
+- **Package Manager:** pnpm
+- **Linting:** ESLint
+- **Type Checking:** TypeScript strict mode
 
-📁 Manajemen dokumen
+> **Lihat detail lengkap:** [docs/TECH_STACK.md](docs/TECH_STACK.md)
 
-💰 Budget/BoQ (roadmap)
+## 🔗 Routes
 
-📈 Laporan & analytics
+### Marketing
+| Route | Description |
+|-------|-------------|
+| `/` | Homepage & Portfolio |
 
-Archinara Work (/work)
+### Archinara PM
+| Route | Description |
+|-------|-------------|
+| `/pm` | PM Landing Page |
+| `/pm/login` | Login Page |
+| `/pm/signup` | Sign Up Page |
+| `/pm/dashboard` | PM Dashboard |
+| `/pm/projects` | Project List |
+| `/pm/projects/:id` | Project Detail |
+| `/pm/team` | Team Management |
+| `/pm/settings` | Settings |
 
-📅 Jadwal harian/mingguan
+### Archinara Work
+| Route | Description |
+|-------|-------------|
+| `/work` | Work Dashboard |
+| `/work/schedule` | Schedule View |
+| `/work/tasks` | Task List |
+| `/work/attendance` | Attendance Check-in |
+| `/work/report` | Daily Report |
 
-✅ Tugas hari ini (progress, foto)
+## 🚀 Deployment
 
-👤 Absen (GPS/QR)*
+### Vercel (Recommended)
 
-📝 Laporan harian
-* Validasi lokasi & QR direncanakan tahap berikutnya.
+1. **Framework Preset:** Next.js
+2. **Build Command:** `pnpm build` (atau biarkan default)
+3. **Output Directory:** Biarkan default
+4. **Environment Variables:** Set `DATABASE_URL` dan variabel lainnya
+5. **Domain:** Attach domain ke project, set Primary + Redirect 301
 
-🛠️ Tech Stack
+### Environment Variables
 
-Frontend: Next.js 16 (React 19), TypeScript 5, Tailwind CSS 4, shadcn/ui, Sonner (toast)
+Pastikan set variabel berikut di Vercel/hosting:
 
-Backend: Next.js API Routes / Route Handlers
+```bash
+DATABASE_URL="postgresql://..."
+NEXTAUTH_SECRET="your-secret-key"
+NEXTAUTH_URL="https://yourdomain.com"
+```
 
-Tooling: pnpm, ESLint
+## 📚 Documentation
 
-Catatan UI: Komponen toast shadcn lama sudah deprecated—gunakan Sonner (<Toaster /> di layout + toast.* di client).
+- [App Structure](docs/APP_STRUCTURE.md) - Penjelasan route groups & struktur
+- [Tech Stack](docs/TECH_STACK.md) - Detail teknologi yang digunakan
+- [Folder Structure](docs/FOLDER_STRUCTURE.md) - Penjelasan setiap folder
+- [Prisma Setup](docs/SETUP_PRISMA.md) - Setup database
+- [Auth Setup](docs/AUTH_SETUP.md) - Setup authentication
+- [Quick Reference](docs/QUICK_REFERENCE.md) - Command cheat sheet
 
-🔗 Routes
-Route	Deskripsi
-/	Homepage (Marketing)
-/pm	PM Landing Page
-/pm/dashboard	PM Dashboard
-/pm/projects	Daftar Proyek
-/pm/projects/:id	Detail Proyek
-/pm/team	Manajemen Tim
-/pm/settings	Pengaturan
-/work	Work Dashboard
-/work/schedule	Jadwal
-/work/tasks	Tugas
-/work/attendance	Absen
-/work/report	Laporan
+## 🗺️ Roadmap
 
-🧩 Catatan Deployment (Vercel)
+### Phase 1 (Current)
+- [x] Marketing site
+- [x] PM landing page
+- [x] Basic routing structure
+- [ ] Authentication system
+- [ ] Database setup & models
 
-Gunakan Framework Preset: Next.js.
+### Phase 2
+- [ ] PM Dashboard implementation
+- [ ] Project management features
+- [ ] Team collaboration
+- [ ] Document upload
 
-Build Command & Output Directory biarkan default (kosong).
+### Phase 3
+- [ ] Work dashboard
+- [ ] Schedule & tasks
+- [ ] Attendance system (GPS/QR)
+- [ ] Daily reports
 
-Jika repo dipakai dalam monorepo, set Root Directory ke folder app yang benar (mis. web/).
+### Phase 4
+- [ ] Budget tracking & BoQ
+- [ ] Analytics & reporting
+- [ ] Mobile app (PWA)
+- [ ] Advanced features
 
-Pastikan domain (apex & www) di-attach ke project (bukan ke deployment), set Primary + Redirect 301.
+## 🤝 Contributing
 
-🗺️ Roadmap Singkat
+Silakan baca dokumentasi di folder `docs/` sebelum contribute.
+
+## 📄 License
+
+Private project - All rights reserved.

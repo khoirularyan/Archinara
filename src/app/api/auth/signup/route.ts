@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
   try {
@@ -19,54 +21,44 @@ export async function POST(request: Request) {
       );
     }
 
-    // TODO: Implement Prisma database query
     // Check if user exists
-    // const existingUser = await prisma.user.findUnique({
-    //   where: { email }
-    // });
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
+    });
 
-    // if (existingUser) {
-    //   return NextResponse.json(
-    //     { error: 'Email sudah terdaftar' },
-    //     { status: 400 }
-    //   );
-    // }
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'Email sudah terdaftar' },
+        { status: 400 }
+      );
+    }
 
-    // TODO: Hash password with bcrypt
-    // const hashedPassword = await bcrypt.hash(password, 10);
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    // TODO: Create user in database
-    // const user = await prisma.user.create({
-    //   data: {
-    //     name,
-    //     email,
-    //     password: hashedPassword,
-    //   }
-    // });
-
-    // Temporary mock response
-    console.log('Signup attempt:', { name, email });
-    
-    return NextResponse.json(
-      { 
-        error: 'Database belum disetup. Silakan setup Prisma terlebih dahulu.',
-        message: 'Signup endpoint siap, tinggal integrasikan dengan database'
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
       },
-      { status: 501 } // Not Implemented
-    );
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      }
+    });
 
-    // TODO: After Prisma setup, return this:
-    // return NextResponse.json(
-    //   { 
-    //     message: 'Pendaftaran berhasil',
-    //     user: {
-    //       id: user.id,
-    //       name: user.name,
-    //       email: user.email,
-    //     }
-    //   },
-    //   { status: 201 }
-    // );
+    return NextResponse.json(
+      {
+        message: 'Pendaftaran berhasil',
+        user
+      },
+      { status: 201 }
+    );
 
   } catch (error) {
     console.error('Signup error:', error);
