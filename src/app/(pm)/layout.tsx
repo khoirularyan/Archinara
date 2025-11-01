@@ -6,14 +6,16 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 export default function PMLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
-  // Only show DashboardLayout for non-auth pages
+  // Pages that don't use DashboardLayout
   const isAuthPage = pathname?.includes("/login") || 
                      pathname?.includes("/signup") || 
                      pathname?.includes("/forgot-password") || 
                      pathname?.includes("/reset-password");
   
-  // Auth pages don't use DashboardLayout
-  if (isAuthPage) {
+  const isPMLanding = pathname === "/pm";
+  
+  // Auth pages and PM landing don't use DashboardLayout
+  if (isAuthPage || isPMLanding) {
     return <>{children}</>;
   }
   
