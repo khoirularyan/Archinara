@@ -7,6 +7,7 @@ import Link from "next/link";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AddProjectDialog } from "@/components/pm/AddProjectDialog";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -108,12 +109,15 @@ export default function DashboardPage() {
     <div>
       <div>
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900">Dashboard</h1>
-          <p className="text-lg text-slate-600 mt-2">
-            Selamat datang kembali, {session?.user?.name}! Berikut ringkasan
-            proyek Anda.
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-slate-900">Dashboard</h1>
+            <p className="text-lg text-slate-600 mt-2">
+              Selamat datang kembali, {session?.user?.name}! Berikut ringkasan
+              proyek Anda.
+            </p>
+          </div>
+          <AddProjectDialog />
         </div>
 
         {/* Stats Cards */}
