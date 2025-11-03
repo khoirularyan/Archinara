@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { toast } from "sonner"
 import {
   Dialog,
   DialogContent,
@@ -35,11 +36,29 @@ export function AddProjectDialog({ trigger, onProjectAdded }: AddProjectDialogPr
     setLoading(true)
 
     try {
-      // TODO: Implement API call to create project
-      console.log("Creating project:", formData)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Call API to create project
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          description: formData.description,
+          startDate: new Date().toISOString(),
+          endDate: formData.deadline ? new Date(formData.deadline).toISOString() : null,
+          budget: formData.budget ? parseFloat(formData.budget) : null,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create project')
+      }
+
+      // Show success message
+      toast.success('Proyek berhasil dibuat!')
       
       // Reset form and close dialog
       setFormData({
@@ -57,6 +76,7 @@ export function AddProjectDialog({ trigger, onProjectAdded }: AddProjectDialogPr
       }
     } catch (error) {
       console.error("Error creating project:", error)
+      toast.error(error instanceof Error ? error.message : 'Gagal membuat proyek')
     } finally {
       setLoading(false)
     }

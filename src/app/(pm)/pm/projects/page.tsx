@@ -1,101 +1,93 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { AddProjectDialog } from "@/components/pm/AddProjectDialog"
 import { Input } from "@/components/ui/input"
 
+interface Project {
+  id: string
+  name: string
+  description: string | null
+  status: string
+  startDate: string
+  endDate: string | null
+  budget: number | null
+  teamCount: number
+  taskCount: number
+  documentCount: number
+  progress: number
+  createdAt: string
+  updatedAt: string
+}
+
 export default function ProjectsPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
-  const [projects] = useState([
-    {
-      id: 1,
-      name: "Renovasi Villa Bali",
-      client: "PT. Bali Resort",
-      progress: 75,
-      status: "On Track",
-      deadline: "2025-03-15",
-      team: 8,
-      budget: "Rp 500.000.000",
-      description: "Renovasi lengkap villa dengan konsep modern tropical"
-    },
-    {
-      id: 2,
-      name: "Pembangunan Kantor Jakarta",
-      client: "CV. Maju Jaya",
-      progress: 45,
-      status: "On Track",
-      deadline: "2025-04-20",
-      team: 12,
-      budget: "Rp 1.200.000.000",
-      description: "Pembangunan gedung kantor 5 lantai di Jakarta Selatan"
-    },
-    {
-      id: 3,
-      name: "Interior Rumah Bandung",
-      client: "Ibu Siti",
-      progress: 90,
-      status: "Almost Done",
-      deadline: "2025-02-10",
-      team: 5,
-      budget: "Rp 150.000.000",
-      description: "Desain interior rumah minimalis modern"
-    },
-    {
-      id: 4,
-      name: "Landscape Taman Surabaya",
-      client: "Pak Budi",
-      progress: 30,
-      status: "Delayed",
-      deadline: "2025-05-01",
-      team: 6,
-      budget: "Rp 300.000.000",
-      description: "Penataan landscape taman kota seluas 2 hektar"
-    },
-    {
-      id: 5,
-      name: "Renovasi Hotel Yogyakarta",
-      client: "PT. Hospitality Indo",
-      progress: 60,
-      status: "On Track",
-      deadline: "2025-06-15",
-      team: 15,
-      budget: "Rp 2.000.000.000",
-      description: "Renovasi hotel bintang 4 dengan 50 kamar"
-    },
-    {
-      id: 6,
-      name: "Pembangunan Rumah Sakit",
-      client: "Yayasan Sehat",
-      progress: 25,
-      status: "On Track",
-      deadline: "2025-12-31",
-      team: 20,
-      budget: "Rp 5.000.000.000",
-      description: "Pembangunan rumah sakit tipe C dengan fasilitas lengkap"
-    },
-  ])
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch projects from database
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/pm/login')
+      return
+    }
+
+    if (status === 'authenticated') {
+      fetchProjects()
+    }
+  }, [status, router])
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true)
+      const res = await fetch('/api/projects')
+      
+      if (!res.ok) {
+        throw new Error('Failed to fetch projects')
+      }
+
+      const data = await res.json()
+      setProjects(data.projects)
+    } catch (error) {
+      console.error('Error fetching projects:', error)
+      toast.error('Gagal memuat data proyek')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "On Track":
+      case "PLANNING":
         return (
-          <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-            On Track
+          <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
+            Planning
           </Badge>
         )
-      case "Almost Done":
+      case "IN_PROGRESS":
         return (
           <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
-            Almost Done
+            In Progress
           </Badge>
         )
-      case "Delayed":
+      case "COMPLETED":
+        return (
+          <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+            Completed
+          </Badge>
+        )
+      case "CANCELLED":
         return (
           <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
-            Delayed
+            Cancelled
           </Badge>
         )
       default:
@@ -112,8 +104,28 @@ export default function ProjectsPage() {
   const filteredProjects = projects.filter(
     (project) =>
       project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.client.toLowerCase().includes(searchQuery.toLowerCase())
+      (project.description && project.description.toLowerCase().includes(searchQuery.toLowerCase()))
   )
+
+  const formatCurrency = (amount: number | null) => {
+    if (!amount) return '-'
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">Memuat data proyek...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -125,7 +137,7 @@ export default function ProjectsPage() {
             Kelola semua proyek yang sedang berjalan
           </p>
         </div>
-        <AddProjectDialog />
+        <AddProjectDialog onProjectAdded={fetchProjects} />
       </div>
 
       {/* Search and Filter */}
@@ -153,7 +165,13 @@ export default function ProjectsPage() {
                 </CardTitle>
                 {getStatusBadge(project.status)}
               </div>
-              <p className="text-sm text-slate-500">{project.client}</p>
+              <p className="text-sm text-slate-500">
+                {new Date(project.createdAt).toLocaleDateString('id-ID', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
+                })}
+              </p>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -187,23 +205,23 @@ export default function ProjectsPage() {
                   <div>
                     <p className="text-xs text-slate-500 mb-1">Deadline</p>
                     <p className="text-sm font-medium text-slate-900">
-                      {new Date(project.deadline).toLocaleDateString("id-ID", {
+                      {project.endDate ? new Date(project.endDate).toLocaleDateString("id-ID", {
                         day: "numeric",
                         month: "short",
                         year: "numeric",
-                      })}
+                      }) : '-'}
                     </p>
                   </div>
                   <div>
                     <p className="text-xs text-slate-500 mb-1">Tim</p>
                     <p className="text-sm font-medium text-slate-900">
-                      {project.team} orang
+                      {project.teamCount} orang
                     </p>
                   </div>
                   <div className="col-span-2">
                     <p className="text-xs text-slate-500 mb-1">Budget</p>
                     <p className="text-sm font-medium text-slate-900">
-                      {project.budget}
+                      {formatCurrency(project.budget)}
                     </p>
                   </div>
                 </div>
