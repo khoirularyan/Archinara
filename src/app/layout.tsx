@@ -21,6 +21,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ClientToaster />
         </Providers>
         
+        {/* Plausible Analytics */}
+        <Script
+          src="https://plausible.io/js/pa-eAblLbIpT91grzTnKPAdG.js"
+          strategy="afterInteractive"
+        />
+        <Script id="plausible-init" strategy="afterInteractive">
+          {`
+            window.plausible = window.plausible || function(){(plausible.q = plausible.q || []).push(arguments)};
+            plausible.init = plausible.init || function(i){plausible.o = i || {}};
+            plausible.init();
+          `}
+        </Script>
+        
         {/* Google Analytics */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-0WPHCPY05P"

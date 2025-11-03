@@ -39,18 +39,63 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo & Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            Archinara <span className="text-blue-600">PM</span>
-          </h1>
-          <p className="text-slate-600">Masuk ke akun Anda</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
+        {/* Left Side - Branding */}
+        <div className="hidden lg:block">
+          <div className="bg-gradient-to-br from-blue-600 to-cyan-600 rounded-2xl p-12 text-white h-full flex flex-col justify-center">
+            <Link href="/pm" className="text-3xl font-bold mb-6">
+              Archinara <span className="text-white">PM</span>
+            </Link>
+            <h2 className="text-4xl font-bold mb-4 leading-tight">
+              Kelola Proyek Arsitektur Lebih Mudah
+            </h2>
+            <p className="text-white/90 text-lg mb-8">
+              Platform all-in-one untuk manajemen proyek, kolaborasi tim, dan tracking progress real-time.
+            </p>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <span>Pantau progres real-time</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <span>Kolaborasi tim seamless</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <span>Dokumen terpusat & aman</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Login Card */}
-        <div className="bg-white rounded-xl shadow-lg p-8">
+        {/* Right Side - Login Form */}
+        <div className="w-full max-w-md mx-auto">
+          {/* Mobile Logo */}
+          <div className="text-center mb-8 lg:hidden">
+            <Link href="/pm" className="text-3xl font-bold text-slate-900">
+              Archinara <span className="text-blue-600">PM</span>
+            </Link>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">Selamat Datang Kembali</h2>
+              <p className="text-slate-600">Masuk ke akun Anda untuk melanjutkan</p>
+            </div>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Error Message */}
             {error && (
@@ -118,9 +163,17 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-slate-900 text-white py-3 rounded-lg font-semibold hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all shadow-lg shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? "Memproses..." : "Masuk"}
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Memproses...
+                </span>
+              ) : "Masuk ke Dashboard"}
             </button>
           </form>
 
@@ -148,14 +201,18 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Back to Home */}
-        <div className="text-center mt-6">
-          <Link
-            href="/pm"
-            className="text-sm text-slate-600 hover:text-slate-900"
-          >
-            ← Kembali ke beranda
-          </Link>
+          {/* Back to Home */}
+          <div className="text-center mt-6">
+            <Link
+              href="/pm"
+              className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Kembali ke beranda
+            </Link>
+          </div>
         </div>
       </div>
     </div>
