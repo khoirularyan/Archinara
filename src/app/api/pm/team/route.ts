@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { notifyAdminsAndManagers } from '@/lib/notifications'
 
 // GET /api/pm/team - Fetch all team members
 export async function GET(req: NextRequest) {
@@ -154,6 +155,13 @@ export async function POST(req: NextRequest) {
         createdAt: true,
       },
     })
+
+    // Create notification for admins and managers
+    await notifyAdminsAndManagers(
+      'Anggota Tim Baru',
+      `${name} (${email}) telah ditambahkan ke tim sebagai ${role}`,
+      'SUCCESS'
+    )
 
     // Return user data with plain password if auto-generated (for display to admin)
     return NextResponse.json(

@@ -13,51 +13,40 @@ export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [stats] = useState({
-    totalProjects: 12,
-    activeProjects: 8,
-    totalTeam: 45,
-    budget: "Rp 2.5M",
+  const [stats, setStats] = useState({
+    projects: 0,
+    team: 0,
+    tasks: 0,
+    activeProjects: 0,
+    pendingTasks: 0,
+    completedTasksThisMonth: 0,
   });
 
-  const [projects] = useState([
-    {
-      id: 1,
-      name: "Renovasi Villa Bali",
-      client: "PT. Bali Resort",
-      progress: 75,
-      status: "On Track",
-      deadline: "2025-03-15",
-      team: 8,
-    },
-    {
-      id: 2,
-      name: "Pembangunan Kantor Jakarta",
-      client: "CV. Maju Jaya",
-      progress: 45,
-      status: "On Track",
-      deadline: "2025-04-20",
-      team: 12,
-    },
-    {
-      id: 3,
-      name: "Interior Rumah Bandung",
-      client: "Ibu Siti",
-      progress: 90,
-      status: "Almost Done",
-      deadline: "2025-02-10",
-      team: 5,
-    },
-    {
-      id: 4,
-      name: "Landscape Taman Surabaya",
-      client: "Pak Budi",
-      progress: 30,
-      status: "Delayed",
-      deadline: "2025-05-01",
-      team: 6,
-    },
-  ]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+
+  // Fetch dashboard stats
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchDashboardStats();
+    }
+  }, [status]);
+
+  const fetchDashboardStats = async () => {
+    try {
+      setIsLoadingStats(true);
+      const response = await fetch("/api/dashboard/stats");
+      if (!response.ok) throw new Error("Failed to fetch stats");
+      
+      const data = await response.json();
+      setStats(data.stats);
+      setProjects(data.recentProjects || []);
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -66,7 +55,7 @@ export default function DashboardPage() {
     }
   }, [status, router]);
 
-  if (status === "loading") {
+  if (status === "loading" || isLoadingStats) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner text="Loading..." />
@@ -76,33 +65,33 @@ export default function DashboardPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "On Track":
+      case "PLANNING":
         return (
-          <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-            On Track
+          <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">
+            Planning
           </Badge>
         );
-      case "Almost Done":
+      case "IN_PROGRESS":
         return (
           <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
-            Almost Done
+            In Progress
           </Badge>
         );
-      case "Delayed":
+      case "COMPLETED":
+        return (
+          <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+            Completed
+          </Badge>
+        );
+      case "CANCELLED":
         return (
           <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
-            Delayed
+            Cancelled
           </Badge>
         );
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
-  };
-
-  const getProgressColor = (progress: number) => {
-    if (progress >= 80) return "bg-blue-600";
-    if (progress >= 50) return "bg-blue-500";
-    return "bg-blue-400";
   };
 
   return (
@@ -131,9 +120,9 @@ export default function DashboardPage() {
                     Total Proyek
                   </p>
                   <h3 className="text-3xl font-bold text-slate-900">
-                    {stats.totalProjects}
+                    {stats.projects}
                   </h3>
-                  <p className="text-sm text-green-600 mt-1">+2 bulan ini</p>
+                  <p className="text-sm text-gray-500 mt-1">Total proyek</p>
                 </div>
                 <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
                   <svg
@@ -165,7 +154,7 @@ export default function DashboardPage() {
                   <h3 className="text-3xl font-bold text-slate-900">
                     {stats.activeProjects}
                   </h3>
-                  <p className="text-sm text-green-600 mt-1">+1 bulan ini</p>
+                  <p className="text-sm text-gray-500 mt-1">Sedang berjalan</p>
                 </div>
                 <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
                   <svg
@@ -195,9 +184,9 @@ export default function DashboardPage() {
                     Total Tim
                   </p>
                   <h3 className="text-3xl font-bold text-slate-900">
-                    {stats.totalTeam}
+                    {stats.team || "-"}
                   </h3>
-                  <p className="text-sm text-green-600 mt-1">+6 bulan ini</p>
+                  <p className="text-sm text-gray-500 mt-1">Anggota tim</p>
                 </div>
                 <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
                   <svg
@@ -218,18 +207,18 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Budget Terpakai */}
+          {/* Tasks */}
           <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500 mb-2">
-                    Budget Terpakai
+                    Total Tasks
                   </p>
                   <h3 className="text-3xl font-bold text-slate-900">
-                    {stats.budget}
+                    {stats.tasks}
                   </h3>
-                  <p className="text-sm text-orange-600 mt-1">75% bulan ini</p>
+                  <p className="text-sm text-gray-500 mt-1">{stats.pendingTasks} pending</p>
                 </div>
                 <div className="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center">
                   <svg
@@ -242,7 +231,7 @@ export default function DashboardPage() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
                     />
                   </svg>
                 </div>
@@ -293,65 +282,26 @@ export default function DashboardPage() {
                       Nama Proyek
                     </th>
                     <th className="px-8 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
-                      Klien
-                    </th>
-                    <th className="px-8 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
-                      Progress
-                    </th>
-                    <th className="px-8 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
                       Status
                     </th>
                     <th className="px-8 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
-                      Deadline
+                      Tasks
                     </th>
                     <th className="px-8 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
                       Tim
                     </th>
+                    <th className="px-8 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
+                      Dibuat
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
-                  {projects.map((project) => (
-                    <tr
-                      key={project.id}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-8 py-5 whitespace-nowrap">
-                        <div className="text-base font-medium text-slate-900">
-                          {project.name}
-                        </div>
-                      </td>
-                      <td className="px-8 py-5 whitespace-nowrap">
-                        <div className="text-base text-slate-600">
-                          {project.client}
-                        </div>
-                      </td>
-                      <td className="px-8 py-5 whitespace-nowrap">
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1 bg-slate-200 rounded-full h-3 max-w-[120px]">
-                            <div
-                              className={`h-3 rounded-full ${getProgressColor(
-                                project.progress
-                              )}`}
-                              style={{ width: `${project.progress}%` }}
-                            />
-                          </div>
-                          <span className="text-base font-medium text-slate-700">
-                            {project.progress}%
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-5 whitespace-nowrap">
-                        {getStatusBadge(project.status)}
-                      </td>
-                      <td className="px-8 py-5 whitespace-nowrap">
-                        <div className="text-base text-slate-600">
-                          {project.deadline}
-                        </div>
-                      </td>
-                      <td className="px-8 py-5 whitespace-nowrap">
-                        <div className="flex items-center text-base text-slate-600">
+                  {projects.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-8 py-12 text-center">
+                        <div className="text-gray-500">
                           <svg
-                            className="w-5 h-5 mr-2"
+                            className="w-12 h-12 mx-auto mb-3 text-gray-300"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -360,14 +310,70 @@ export default function DashboardPage() {
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               strokeWidth={2}
-                              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
                             />
                           </svg>
-                          {project.team} orang
+                          <p className="text-base font-medium">Belum ada proyek</p>
+                          <p className="text-sm mt-1">Mulai dengan membuat proyek baru</p>
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    projects.map((project) => (
+                      <tr
+                        key={project.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-8 py-5">
+                          <div>
+                            <div className="text-base font-medium text-slate-900">
+                              {project.name}
+                            </div>
+                            {project.description && (
+                              <div className="text-sm text-gray-500 mt-1 line-clamp-1">
+                                {project.description}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-8 py-5 whitespace-nowrap">
+                          {getStatusBadge(project.status)}
+                        </td>
+                        <td className="px-8 py-5 whitespace-nowrap">
+                          <div className="text-base text-slate-600">
+                            {project._count?.tasks || 0} tasks
+                          </div>
+                        </td>
+                        <td className="px-8 py-5 whitespace-nowrap">
+                          <div className="flex items-center text-base text-slate-600">
+                            <svg
+                              className="w-5 h-5 mr-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                              />
+                            </svg>
+                            {project._count?.members || 0} orang
+                          </div>
+                        </td>
+                        <td className="px-8 py-5 whitespace-nowrap">
+                          <div className="text-base text-slate-600">
+                            {new Date(project.createdAt).toLocaleDateString('id-ID', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric'
+                            })}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
