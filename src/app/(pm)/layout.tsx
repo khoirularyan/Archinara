@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { Toaster } from "sonner";
 
 export default function PMLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -16,9 +17,19 @@ export default function PMLayout({ children }: { children: React.ReactNode }) {
   
   // Auth pages and PM landing don't use DashboardLayout
   if (isAuthPage || isPMLanding) {
-    return <>{children}</>;
+    return (
+      <>
+        {children}
+        <Toaster position="top-right" richColors />
+      </>
+    );
   }
   
   // All other PM pages use DashboardLayout (dashboard, projects, team, documents, etc.)
-  return <DashboardLayout>{children}</DashboardLayout>;
+  return (
+    <>
+      <DashboardLayout>{children}</DashboardLayout>
+      <Toaster position="top-right" richColors />
+    </>
+  );
 }

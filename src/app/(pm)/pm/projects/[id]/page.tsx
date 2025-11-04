@@ -1,52 +1,147 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
-export default function ProjectDetailPage({ params }: { params: { id: string } }) {
-  // Mock data - nanti diganti dengan fetch dari API
-  const [project] = useState({
-    id: params.id,
-    name: "Renovasi Villa Bali",
-    client: "PT. Bali Resort",
-    description: "Renovasi lengkap villa dengan konsep modern tropical. Proyek ini mencakup pembaruan seluruh interior, eksterior, dan landscape area villa seluas 500m².",
-    status: "On Track",
-    progress: 75,
-    deadline: "2025-03-15",
-    startDate: "2024-12-01",
-    budget: "Rp 500.000.000",
-    spent: "Rp 375.000.000",
-    team: 8,
-    location: "Ubud, Bali",
-    category: "Renovasi",
-  })
+interface ProjectDetail {
+  id: string
+  name: string
+  description: string | null
+  status: string
+  startDate: string
+  endDate: string | null
+  budget: number | null
+  progress: number
+  teamCount: number
+  taskCount: number
+  completedTaskCount: number
+  documentCount: number
+  createdAt: string
+  updatedAt: string
+  members: any[]
+  tasks: any[]
+  documents: any[]
+}
+
+export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const [project, setProject] = useState<ProjectDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [projectId, setProjectId] = useState<string | null>(null)
+
+  // Unwrap params Promise
+  useEffect(() => {
+    params.then(p => setProjectId(p.id))
+  }, [])
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/pm/login')
+      return
+    }
+
+    if (status === 'authenticated' && projectId) {
+      fetchProject()
+    }
+  }, [status, router, projectId])
+
+  const fetchProject = async () => {
+    if (!projectId) return
+    
+    try {
+      setLoading(true)
+      const res = await fetch(`/api/projects/${projectId}`)
+      
+      if (!res.ok) {
+        if (res.status === 404) {
+          toast.error('Proyek tidak ditemukan')
+          router.push('/pm/projects')
+          return
+        }
+        if (res.status === 403) {
+          toast.error('Anda tidak memiliki akses ke proyek ini')
+          router.push('/pm/projects')
+          return
+        }
+        throw new Error('Failed to fetch project')
+      }
+
+      const data = await res.json()
+      setProject(data.project)
+    } catch (error) {
+      console.error('Error fetching project:', error)
+      toast.error('Gagal memuat data proyek')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "On Track":
+      case "PLANNING":
         return (
-          <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-            On Track
+          <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
+            Planning
           </Badge>
         )
-      case "Almost Done":
+      case "IN_PROGRESS":
         return (
           <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
-            Almost Done
+            In Progress
           </Badge>
         )
-      case "Delayed":
+      case "COMPLETED":
+        return (
+          <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+            Completed
+          </Badge>
+        )
+      case "CANCELLED":
         return (
           <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
-            Delayed
+            Cancelled
           </Badge>
         )
       default:
         return <Badge variant="outline">{status}</Badge>
     }
+  }
+
+  const formatCurrency = (amount: number | null) => {
+    if (!amount) return '-'
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">Memuat data proyek...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!project) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-slate-600">Proyek tidak ditemukan</p>
+        </div>
+      </div>
+    )
   }
 
   const getProgressColor = (progress: number) => {
@@ -69,7 +164,13 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 mb-2">{project.name}</h1>
-          <p className="text-lg text-slate-600">{project.client}</p>
+          <p className="text-lg text-slate-600">
+            Dibuat {new Date(project.createdAt).toLocaleDateString('id-ID', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            })}
+          </p>
         </div>
         <div className="flex gap-2">
           {getStatusBadge(project.status)}
@@ -101,12 +202,15 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
               </div>
             </div>
             <p className="text-sm text-slate-600">
-              Proyek berjalan sesuai jadwal. Target penyelesaian pada{" "}
-              {new Date(project.deadline).toLocaleDateString("id-ID", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
+              {project.endDate ? (
+                `Target penyelesaian pada ${new Date(project.endDate).toLocaleDateString("id-ID", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}`
+              ) : (
+                'Belum ada target deadline'
+              )}
             </p>
           </div>
         </CardContent>
@@ -120,11 +224,11 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
               <div>
                 <p className="text-sm font-medium text-gray-500 mb-2">Deadline</p>
                 <h3 className="text-xl font-bold text-slate-900">
-                  {new Date(project.deadline).toLocaleDateString("id-ID", {
+                  {project.endDate ? new Date(project.endDate).toLocaleDateString("id-ID", {
                     day: "numeric",
                     month: "short",
                     year: "numeric",
-                  })}
+                  }) : '-'}
                 </h3>
               </div>
               <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
@@ -151,7 +255,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500 mb-2">Budget</p>
-                <h3 className="text-xl font-bold text-slate-900">{project.budget}</h3>
+                <h3 className="text-xl font-bold text-slate-900">{formatCurrency(project.budget)}</h3>
               </div>
               <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
                 <svg
@@ -177,7 +281,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500 mb-2">Tim</p>
-                <h3 className="text-xl font-bold text-slate-900">{project.team} orang</h3>
+                <h3 className="text-xl font-bold text-slate-900">{project.teamCount} orang</h3>
               </div>
               <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
                 <svg
@@ -202,8 +306,8 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 mb-2">Lokasi</p>
-                <h3 className="text-xl font-bold text-slate-900">{project.location}</h3>
+                <p className="text-sm font-medium text-gray-500 mb-2">Tasks</p>
+                <h3 className="text-xl font-bold text-slate-900">{project.completedTaskCount}/{project.taskCount}</h3>
               </div>
               <div className="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center">
                 <svg
@@ -238,7 +342,9 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
             <CardTitle>Deskripsi Proyek</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-slate-700 leading-relaxed">{project.description}</p>
+            <p className="text-slate-700 leading-relaxed">
+              {project.description || 'Tidak ada deskripsi'}
+            </p>
           </CardContent>
         </Card>
 
@@ -258,18 +364,27 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
               </p>
             </div>
             <div>
-              <p className="text-sm text-slate-500 mb-1">Kategori</p>
-              <p className="text-base font-medium text-slate-900">{project.category}</p>
+              <p className="text-sm text-slate-500 mb-1">Status</p>
+              <p className="text-base font-medium text-slate-900">
+                {project.status === 'PLANNING' && 'Planning'}
+                {project.status === 'IN_PROGRESS' && 'In Progress'}
+                {project.status === 'COMPLETED' && 'Completed'}
+                {project.status === 'CANCELLED' && 'Cancelled'}
+              </p>
             </div>
             <div>
-              <p className="text-sm text-slate-500 mb-1">Budget Terpakai</p>
-              <p className="text-base font-medium text-slate-900">{project.spent}</p>
-              <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
-                <div
-                  className="h-2 rounded-full bg-orange-500"
-                  style={{ width: "75%" }}
-                />
-              </div>
+              <p className="text-sm text-slate-500 mb-1">Total Dokumen</p>
+              <p className="text-base font-medium text-slate-900">{project.documentCount} file</p>
+            </div>
+            <div>
+              <p className="text-sm text-slate-500 mb-1">Terakhir Diupdate</p>
+              <p className="text-base font-medium text-slate-900">
+                {new Date(project.updatedAt).toLocaleDateString("id-ID", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </p>
             </div>
           </CardContent>
         </Card>
