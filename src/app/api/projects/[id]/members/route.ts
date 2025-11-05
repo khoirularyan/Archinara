@@ -137,11 +137,11 @@ export async function POST(
     try {
       await (prisma as any).notification.create({
         data: {
-          userId: memberUserId,
-          title: 'Ditambahkan ke Project',
-          message: `Anda telah ditambahkan sebagai ${memberRole || 'MEMBER'} di project "${project.name}"`,
-          type: 'PROJECT',
-          isRead: false
+            userId: memberUserId,
+            title: 'Ditambahkan ke Project',
+            message: `Anda telah ditambahkan sebagai ${memberRole || 'MEMBER'} di project "${project.name}"`,
+            type: 'INFO',
+            read: false
         }
       })
     } catch (notifError) {
