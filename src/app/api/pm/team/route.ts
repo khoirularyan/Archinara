@@ -18,11 +18,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user has permission (ADMIN or MANAGER)
+    // Check if user has permission (ADMIN, MANAGER, ARCHITECT, DRAFTER can view)
     const userRole = session.user.role
-    if (userRole !== 'ADMIN' && userRole !== 'MANAGER') {
+    if (userRole !== 'ADMIN' && userRole !== 'MANAGER' && userRole !== 'ARCHITECT' && userRole !== 'DRAFTER') {
       console.log('[API /api/pm/team] Forbidden - role:', userRole)
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return NextResponse.json({ error: 'Forbidden - Only ADMIN, MANAGER, ARCHITECT, and DRAFTER can view team' }, { status: 403 })
     }
 
     console.log('[API /api/pm/team] Fetching users from database...')
@@ -70,10 +70,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user has permission (ADMIN or MANAGER only)
+    // Check if user has permission (ADMIN, MANAGER, ARCHITECT can add members)
     const userRole = session.user.role
-    if (userRole !== 'ADMIN' && userRole !== 'MANAGER') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (userRole !== 'ADMIN' && userRole !== 'MANAGER' && userRole !== 'ARCHITECT') {
+      return NextResponse.json({ error: 'Forbidden - Only ADMIN, MANAGER, and ARCHITECT can add team members' }, { status: 403 })
     }
 
     const body = await req.json()
@@ -87,10 +87,19 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Validate role
-    const validRoles = ['ADMIN', 'MANAGER', 'ARCHITECT', 'USER']
+    // Validate role based on user's permission
+    // ADMIN and MANAGER can create any role
+    // ARCHITECT can only create ARCHITECT and DRAFTER
+    const validRoles = ['ADMIN', 'MANAGER', 'ARCHITECT', 'DRAFTER', 'USER']
     if (!validRoles.includes(role)) {
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+    }
+
+    // ARCHITECT cannot create ADMIN or MANAGER
+    if (userRole === 'ARCHITECT' && (role === 'ADMIN' || role === 'MANAGER')) {
+      return NextResponse.json({ 
+        error: 'Forbidden - ARCHITECT can only create ARCHITECT, DRAFTER, or USER roles' 
+      }, { status: 403 })
     }
 
     // Check if email already exists
@@ -157,11 +166,18 @@ export async function POST(req: NextRequest) {
     })
 
     // Create notification for admins and managers
-    await notifyAdminsAndManagers(
-      'Anggota Tim Baru',
-      `${name} (${email}) telah ditambahkan ke tim sebagai ${role}`,
-      'SUCCESS'
-    )
+    try {
+      console.log('[API /api/pm/team] Creating notifications for admins and managers...')
+      const notificationResult = await notifyAdminsAndManagers(
+        'Anggota Tim Baru',
+        `${name} (${email}) telah ditambahkan ke tim sebagai ${role}`,
+        'SUCCESS'
+      )
+      console.log('[API /api/pm/team] Notification result:', notificationResult)
+    } catch (notifError) {
+      // Don't fail the request if notification fails
+      console.error('[API /api/pm/team] Error creating notification:', notifError)
+    }
 
     // Return user data with plain password if auto-generated (for display to admin)
     return NextResponse.json(
@@ -172,9 +188,12 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
-    console.error('Error creating team member:', error)
+    console.error('[API /api/pm/team] Error creating team member:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }

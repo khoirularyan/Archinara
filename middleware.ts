@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { prisma } from "@/lib/prisma";
 
 const DASHBOARD_TOKEN = process.env.DASHBOARD_TOKEN ?? "dev-token";
 const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET ?? "dev-secret";
 
 // Role yang diizinkan untuk /pm/**
-const PM_ALLOWED_ROLES = ["ADMIN", "MANAGER", "ARCHITECT"];
+const PM_ALLOWED_ROLES = ["ADMIN", "MANAGER", "ARCHITECT", "DRAFTER"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -56,7 +57,26 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // 6) Cek role untuk route /pm/**
+  // 6) Cek email verification (kecuali untuk halaman verify-pending)
+  if (!pathname.startsWith("/auth/verify-pending")) {
+    // Check if user's email is verified from database
+    const userId = sessionToken.sub as string;
+    if (userId) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { emailVerified: true, email: true }
+      });
+      
+      if (user && !user.emailVerified) {
+        // Email belum diverifikasi → redirect ke verify-pending
+        const verifyUrl = new URL("/auth/verify-pending", req.url);
+        verifyUrl.searchParams.set("email", user.email);
+        return NextResponse.redirect(verifyUrl);
+      }
+    }
+  }
+
+  // 7) Cek role untuk route /pm/**
   if (pathname.startsWith("/pm")) {
     const userRole = sessionToken.role as string;
     if (!PM_ALLOWED_ROLES.includes(userRole)) {

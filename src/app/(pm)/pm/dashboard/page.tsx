@@ -23,6 +23,7 @@ export default function DashboardPage() {
   });
 
   const [projects, setProjects] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   // Fetch dashboard stats
@@ -35,14 +36,19 @@ export default function DashboardPage() {
   const fetchDashboardStats = async () => {
     try {
       setIsLoadingStats(true);
-      const response = await fetch("/api/dashboard/stats");
-      if (!response.ok) throw new Error("Failed to fetch stats");
+      // Use new aggregated endpoint for better performance
+      const response = await fetch("/api/pm/dashboard", {
+        // Enable caching
+        next: { revalidate: 60 },
+      });
+      if (!response.ok) throw new Error("Failed to fetch dashboard data");
       
       const data = await response.json();
       setStats(data.stats);
       setProjects(data.recentProjects || []);
+      setNotifications(data.notifications || []);
     } catch (error) {
-      console.error("Error fetching dashboard stats:", error);
+      console.error("Error fetching dashboard data:", error);
     } finally {
       setIsLoadingStats(false);
     }

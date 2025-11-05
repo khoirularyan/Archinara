@@ -4,4 +4,7 @@
   --color-navy: #1e3a5f;
   --color-navy-light: #2d4a73;
   --color-navy-dark: #0f1f3a;
+  
+  /* Font family fallbacks */
+  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }

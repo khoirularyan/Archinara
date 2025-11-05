@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import { sendVerificationEmail } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -36,12 +38,20 @@ export async function POST(request: Request) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const tokenExpiry = new Date();
+    tokenExpiry.setHours(tokenExpiry.getHours() + 24); // 24 hours
+
+    // Create user with verification token
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
+        emailVerified: null, // Not verified yet
+        resetToken: verificationToken, // Reuse resetToken field for verification
+        resetTokenExpiry: tokenExpiry,
       },
       select: {
         id: true,
@@ -52,10 +62,20 @@ export async function POST(request: Request) {
       }
     });
 
+    // Send verification email
+    try {
+      await sendVerificationEmail(email, name, verificationToken);
+      console.log('[Signup] Verification email sent to:', email);
+    } catch (emailError) {
+      console.error('[Signup] Failed to send verification email:', emailError);
+      // Don't fail signup if email fails
+    }
+
     return NextResponse.json(
       {
-        message: 'Pendaftaran berhasil',
-        user
+        message: 'Pendaftaran berhasil! Silakan cek email Anda untuk verifikasi.',
+        user,
+        requiresVerification: true
       },
       { status: 201 }
     );

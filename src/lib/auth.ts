@@ -35,6 +35,11 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
+        // Check if email is verified
+        if (!user.emailVerified) {
+          throw new Error('EMAIL_NOT_VERIFIED: Email belum diverifikasi. Silakan cek inbox Anda.')
+        }
+
         // Cek password dengan bcrypt
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
@@ -94,7 +99,7 @@ export const authOptions: NextAuthOptions = {
       // Tempelin role, id, image, dan isTempPassword ke session.user
       if (session?.user && token.sub) {
         session.user.id = token.sub
-        session.user.role = token.role as 'ADMIN' | 'MANAGER' | 'ARCHITECT' | 'USER'
+        session.user.role = token.role as 'ADMIN' | 'MANAGER' | 'ARCHITECT' | 'DRAFTER' | 'USER'
         session.user.image = token.image as string | null
         ;(session.user as any).isTempPassword = token.isTempPassword
       }

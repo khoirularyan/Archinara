@@ -5,7 +5,12 @@ import ClientToaster from "@/components/ClientToaster";
 import Providers from "@/components/Providers";
 import { Inter } from "next/font/google";
 
-const inter = Inter({ subsets: ["latin"], display: "swap" });
+const inter = Inter({ 
+  subsets: ["latin"], 
+  display: "swap",
+  variable: "--font-inter",
+  fallback: ['system-ui', 'arial']
+});
 
 export const metadata: Metadata = {
   title: "Archinara - Modern Architecture Studio",

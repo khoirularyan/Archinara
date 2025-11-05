@@ -103,7 +103,16 @@ export default function TeamPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create team member")
+        // Handle specific error messages
+        if (data.error === 'Email already exists') {
+          toast.error('Email sudah terdaftar. Gunakan email lain.')
+        } else if (data.error === 'Username already exists') {
+          toast.error('Username sudah digunakan. Gunakan username lain.')
+        } else {
+          toast.error(data.error || 'Gagal menambahkan anggota tim')
+        }
+        setIsSubmitting(false)
+        return
       }
 
       // Show generated password if auto-generated
@@ -123,8 +132,7 @@ export default function TeamPage() {
       fetchTeamMembers()
     } catch (error: any) {
       console.error("Error creating team member:", error)
-      toast.error(error.message || "Gagal menambahkan anggota tim")
-    } finally {
+      toast.error("Terjadi kesalahan. Silakan coba lagi.")
       setIsSubmitting(false)
     }
   }

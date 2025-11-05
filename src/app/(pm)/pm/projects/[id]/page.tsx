@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { ProjectMembersCard } from "@/components/projects/ProjectMembersCard"
 
 interface ProjectDetail {
   id: string
@@ -389,6 +390,17 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           </CardContent>
         </Card>
       </div>
+
+      {/* Project Members */}
+      {session?.user && (
+        <ProjectMembersCard
+          projectId={project.id}
+          members={project.members}
+          onMembersUpdate={fetchProject}
+          userRole={session.user.role}
+          currentUserId={session.user.id}
+        />
+      )}
     </div>
   )
 }

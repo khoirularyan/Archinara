@@ -17,19 +17,24 @@ export async function GET(req: NextRequest) {
 
     // Get projects count based on user role
     let projectsCount = 0
-    if (userRole === 'ADMIN' || userRole === 'MANAGER') {
+    if (userRole === 'USER') {
+      // USER cannot see projects
+      projectsCount = 0
+    } else if (userRole === 'ADMIN' || userRole === 'MANAGER') {
       // Admin and Manager can see all projects
       projectsCount = await prisma.project.count()
     } else {
-      // Other users can only see their projects
+      // ARCHITECT and DRAFTER can see their projects
       projectsCount = await prisma.projectMember.count({
         where: { userId },
       })
     }
 
-    // Get team members count (only for ADMIN and MANAGER)
+    // Get team members count (USER cannot see, others can)
     let teamCount = 0
-    if (userRole === 'ADMIN' || userRole === 'MANAGER') {
+    if (userRole === 'USER') {
+      teamCount = 0
+    } else {
       teamCount = await prisma.user.count()
     }
 
@@ -45,7 +50,10 @@ export async function GET(req: NextRequest) {
 
     // Get active projects (IN_PROGRESS)
     let activeProjectsCount = 0
-    if (userRole === 'ADMIN' || userRole === 'MANAGER') {
+    if (userRole === 'USER') {
+      // USER cannot see projects
+      activeProjectsCount = 0
+    } else if (userRole === 'ADMIN' || userRole === 'MANAGER') {
       activeProjectsCount = await prisma.project.count({
         where: { status: 'IN_PROGRESS' },
       })
@@ -86,8 +94,11 @@ export async function GET(req: NextRequest) {
     })
 
     // Get recent projects
-    let recentProjects = []
-    if (userRole === 'ADMIN' || userRole === 'MANAGER') {
+    let recentProjects: any[] = []
+    if (userRole === 'USER') {
+      // USER cannot see projects
+      recentProjects = []
+    } else if (userRole === 'ADMIN' || userRole === 'MANAGER') {
       recentProjects = await prisma.project.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },

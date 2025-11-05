@@ -1,18 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
-import nodemailer from "nodemailer";
-
-// Setup nodemailer transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_SERVER_HOST,
-  port: parseInt(process.env.EMAIL_SERVER_PORT || "587"),
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.EMAIL_SERVER_USER,
-    pass: process.env.EMAIL_SERVER_PASSWORD,
-  },
-});
+import { sendPasswordResetEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -49,25 +38,9 @@ export async function POST(request: Request) {
       },
     });
 
-    // Send email
-    const resetUrl = `${process.env.NEXTAUTH_URL}/pm/reset-password?token=${resetToken}`;
-
+    // Send email using Resend
     try {
-      await transporter.sendMail({
-        from: process.env.EMAIL_FROM,
-        to: email,
-        subject: "Reset Password - Archinara PM",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #1f2937;">Reset Password</h2>
-            <p>Anda menerima email ini karena ada permintaan reset password untuk akun Archinara PM.</p>
-            <p>Klik link di bawah untuk reset password Anda:</p>
-            <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px; margin: 16px 0;">Reset Password</a>
-            <p style="color: #6b7280; font-size: 14px;">Link ini akan kadaluarsa dalam 1 jam.</p>
-            <p style="color: #6b7280; font-size: 14px;">Jika Anda tidak meminta reset password, abaikan email ini.</p>
-          </div>
-        `,
-      });
+      await sendPasswordResetEmail(email, user.name || 'User', resetToken);
     } catch (emailError) {
       console.error("Email sending error:", emailError);
       return NextResponse.json(

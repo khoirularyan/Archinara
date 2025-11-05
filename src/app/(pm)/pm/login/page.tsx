@@ -26,12 +26,18 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
+        // Check if error is email not verified
+        if (result.error.includes('EMAIL_NOT_VERIFIED')) {
+          router.push(`/auth/verify-pending?email=${encodeURIComponent(email)}`);
+          return;
+        }
         setError("Email atau password salah");
       } else {
         // Redirect ke dashboard
         router.push("/pm/dashboard");
       }
-    } catch {
+    } catch (err: any) {
+      console.error('Login error:', err);
       setError("Terjadi kesalahan saat login");
     } finally {
       setIsLoading(false);

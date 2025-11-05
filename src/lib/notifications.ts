@@ -56,6 +56,7 @@ export async function createNotifications(
  */
 export async function notifyAdminsAndManagers(title: string, message: string, type: NotificationType = 'INFO') {
   try {
+    console.log('[Notifications] Finding admins and managers...')
     const adminsAndManagers = await prisma.user.findMany({
       where: {
         role: {
@@ -64,8 +65,18 @@ export async function notifyAdminsAndManagers(title: string, message: string, ty
       },
       select: {
         id: true,
+        name: true,
+        role: true,
       },
     })
+
+    console.log(`[Notifications] Found ${adminsAndManagers.length} admins/managers:`, 
+      adminsAndManagers.map(u => `${u.name} (${u.role})`))
+
+    if (adminsAndManagers.length === 0) {
+      console.warn('[Notifications] No admins or managers found to notify')
+      return null
+    }
 
     const notifications = adminsAndManagers.map((user) => ({
       userId: user.id,
@@ -74,9 +85,13 @@ export async function notifyAdminsAndManagers(title: string, message: string, ty
       type,
     }))
 
-    return await createNotifications(notifications)
+    console.log('[Notifications] Creating notifications:', notifications.length)
+    const result = await createNotifications(notifications)
+    console.log('[Notifications] Notifications created:', result)
+    
+    return result
   } catch (error) {
-    console.error('Error notifying admins and managers:', error)
+    console.error('[Notifications] Error notifying admins and managers:', error)
     return null
   }
 }

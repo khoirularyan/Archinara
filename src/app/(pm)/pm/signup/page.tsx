@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function SignupPage() {
@@ -13,6 +14,7 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -59,8 +61,11 @@ export default function SignupPage() {
       }
 
       setSuccess(true);
-      // TODO: Redirect to login or dashboard
-      console.log("Signup success:", data);
+      
+      // Redirect to verify-pending page
+      setTimeout(() => {
+        router.push(`/auth/verify-pending?email=${encodeURIComponent(formData.email)}`);
+      }, 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan");
     } finally {

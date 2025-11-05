@@ -5,13 +5,13 @@ declare module 'next-auth' {
   interface Session {
     user: {
       id: string
-      role?: 'ADMIN' | 'MANAGER' | 'ARCHITECT' | 'USER'
+      role?: 'ADMIN' | 'MANAGER' | 'ARCHITECT' | 'DRAFTER' | 'USER'
       image?: string | null
     } & DefaultSession['user']
   }
 
   interface User extends DefaultUser {
-    role?: 'ADMIN' | 'MANAGER' | 'ARCHITECT' | 'USER'
+    role?: 'ADMIN' | 'MANAGER' | 'ARCHITECT' | 'DRAFTER' | 'USER'
     image?: string | null
   }
 }
