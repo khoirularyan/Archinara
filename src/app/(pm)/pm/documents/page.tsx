@@ -1,81 +1,202 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { toast } from "sonner"
+import { useSession } from "next-auth/react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+type Document = {
+  id: string
+  name: string
+  fileName: string
+  fileSize: number
+  mimeType: string
+  url: string
+  projectId: string
+  uploadedAt: string
+  uploadedBy: {
+    id: string
+    name: string | null
+    email: string
+    image: string | null
+  }
+  project: {
+    id: string
+    name: string
+  }
+}
+
+type Project = {
+  id: string
+  name: string
+}
 
 export default function DocumentsPage() {
-  const [documents] = useState([
-    {
-      id: 1,
-      name: "Desain Arsitektur Villa.pdf",
-      type: "PDF",
-      size: "2.5 MB",
-      category: "Design",
-      project: "Renovasi Villa Bali",
-      uploadedBy: "Siti Nurhaliza",
-      uploadDate: "2024-12-10",
-      version: "v2.0",
-    },
-    {
-      id: 2,
-      name: "RAB Proyek Villa Bali.xlsx",
-      type: "Excel",
-      size: "1.2 MB",
-      category: "Budget",
-      project: "Renovasi Villa Bali",
-      uploadedBy: "Budi Santoso",
-      uploadDate: "2024-12-15",
-      version: "v1.5",
-    },
-    {
-      id: 3,
-      name: "Kontrak Klien Kantor Jakarta.pdf",
-      type: "PDF",
-      size: "850 KB",
-      category: "Legal",
-      project: "Pembangunan Kantor Jakarta",
-      uploadedBy: "Budi Santoso",
-      uploadDate: "2024-12-01",
-      version: "v1.0",
-    },
-    {
-      id: 4,
-      name: "Foto Progress Week 1.zip",
-      type: "ZIP",
-      size: "15.3 MB",
-      category: "Progress",
-      project: "Renovasi Villa Bali",
-      uploadedBy: "Eko Prasetyo",
-      uploadDate: "2025-01-08",
-      version: "v1.0",
-    },
-    {
-      id: 5,
-      name: "Spesifikasi Material Interior.docx",
-      type: "Word",
-      size: "450 KB",
-      category: "Specification",
-      project: "Interior Rumah Bandung",
-      uploadedBy: "Ahmad Yani",
-      uploadDate: "2025-01-05",
-      version: "v1.2",
-    },
-    {
-      id: 6,
-      name: "Denah Lantai 1 Kantor.dwg",
-      type: "AutoCAD",
-      size: "3.8 MB",
-      category: "Design",
-      project: "Pembangunan Kantor Jakarta",
-      uploadedBy: "Siti Nurhaliza",
-      uploadDate: "2024-12-12",
-      version: "v3.0",
-    },
-  ])
+  const { data: session } = useSession()
+  const [documents, setDocuments] = useState<Document[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("")
+  const [documentName, setDocumentName] = useState<string>("")
 
-  const getFileIcon = (type: string) => {
+  useEffect(() => {
+    fetchDocuments()
+    fetchProjects()
+  }, [])
+
+  const fetchDocuments = async () => {
+    try {
+      const res = await fetch('/api/pm/documents')
+      const data = await res.json()
+      if (res.ok) {
+        setDocuments(data.documents)
+      } else {
+        toast.error(data.error || 'Gagal memuat dokumen')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan saat memuat dokumen')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const fetchProjects = async () => {
+    try {
+      const res = await fetch('/api/projects')
+      const data = await res.json()
+      if (res.ok) {
+        // API /api/projects returns { projects: [...] }
+        setProjects(data.projects || [])
+        console.log('Projects loaded:', data.projects?.length || 0)
+      } else {
+        console.error('Failed to fetch projects:', data.error)
+        toast.error('Gagal memuat daftar proyek')
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error)
+      toast.error('Terjadi kesalahan saat memuat proyek')
+    }
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      if (!documentName) {
+        setDocumentName(file.name)
+      }
+    }
+  }
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!selectedFile || !selectedProjectId) {
+      toast.error('Pilih file dan proyek terlebih dahulu')
+      return
+    }
+
+    setIsUploading(true)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', selectedFile)
+      formData.append('projectId', selectedProjectId)
+      formData.append('name', documentName || selectedFile.name)
+
+      const res = await fetch('/api/pm/documents', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        toast.success('Dokumen berhasil diupload')
+        setDocuments([data.document, ...documents])
+        setIsDialogOpen(false)
+        resetForm()
+      } else {
+        toast.error(data.error || 'Gagal mengupload dokumen')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan saat mengupload dokumen')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleDelete = async (documentId: string) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus dokumen ini?')) {
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/pm/documents/${documentId}`, {
+        method: 'DELETE',
+      })
+
+      if (res.ok) {
+        toast.success('Dokumen berhasil dihapus')
+        setDocuments(documents.filter(doc => doc.id !== documentId))
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Gagal menghapus dokumen')
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan saat menghapus dokumen')
+    }
+  }
+
+  const resetForm = () => {
+    setSelectedFile(null)
+    setSelectedProjectId("")
+    setDocumentName("")
+  }
+
+  const getFileType = (mimeType: string): string => {
+    if (mimeType.includes('pdf')) return 'PDF'
+    if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return 'Excel'
+    if (mimeType.includes('word') || mimeType.includes('document')) return 'Word'
+    if (mimeType.includes('zip') || mimeType.includes('compressed')) return 'ZIP'
+    if (mimeType.includes('dwg') || mimeType.includes('autocad')) return 'AutoCAD'
+    if (mimeType.includes('image')) return 'Image'
+    return 'File'
+  }
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+  }
+
+  const getFileIcon = (mimeType: string) => {
+    const type = getFileType(mimeType)
     switch (type) {
       case "PDF":
         return (
@@ -188,29 +309,12 @@ export default function DocumentsPage() {
     }
   }
 
-  const getCategoryBadge = (category: string) => {
-    const colors: Record<string, string> = {
-      Design: "bg-blue-100 text-blue-700",
-      Budget: "bg-green-100 text-green-700",
-      Legal: "bg-purple-100 text-purple-700",
-      Progress: "bg-orange-100 text-orange-700",
-      Specification: "bg-pink-100 text-pink-700",
-    }
-
-    return (
-      <Badge className={`${colors[category] || "bg-gray-100 text-gray-700"} hover:${colors[category]}`}>
-        {category}
-      </Badge>
-    )
-  }
-
-  const categories = ["All", "Design", "Budget", "Legal", "Progress", "Specification"]
-  const [selectedCategory, setSelectedCategory] = useState("All")
+  const [selectedProject, setSelectedProject] = useState<string>("All")
 
   const filteredDocuments =
-    selectedCategory === "All"
+    selectedProject === "All"
       ? documents
-      : documents.filter((doc) => doc.category === selectedCategory)
+      : documents.filter((doc) => doc.project.id === selectedProject)
 
   return (
     <div className="space-y-6">
@@ -222,7 +326,7 @@ export default function DocumentsPage() {
             Kelola semua dokumen proyek
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setIsDialogOpen(true)}>
           <svg
             className="w-5 h-5 mr-2"
             fill="none"
@@ -240,111 +344,231 @@ export default function DocumentsPage() {
         </Button>
       </div>
 
-      {/* Category Filter */}
+      {/* Upload Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upload Dokumen</DialogTitle>
+            <DialogDescription>
+              Upload dokumen proyek ke Supabase Storage
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleUpload} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="project">Proyek *</Label>
+              <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih proyek" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.length === 0 ? (
+                    <div className="px-2 py-6 text-center text-sm text-slate-500">
+                      Tidak ada proyek tersedia
+                    </div>
+                  ) : (
+                    projects.map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              {projects.length === 0 && (
+                <p className="text-xs text-amber-600">
+                  ⚠️ Belum ada proyek. Buat proyek terlebih dahulu untuk upload dokumen.
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="file">File *</Label>
+              <Input
+                id="file"
+                type="file"
+                onChange={handleFileChange}
+                required
+              />
+              {selectedFile && (
+                <p className="text-sm text-slate-500">
+                  {selectedFile.name} ({formatFileSize(selectedFile.size)})
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="name">Nama Dokumen</Label>
+              <Input
+                id="name"
+                value={documentName}
+                onChange={(e) => setDocumentName(e.target.value)}
+                placeholder="Nama dokumen (opsional)"
+              />
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsDialogOpen(false)
+                  resetForm()
+                }}
+                disabled={isUploading}
+              >
+                Batal
+              </Button>
+              <Button type="submit" disabled={isUploading}>
+                {isUploading ? "Mengupload..." : "Upload"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Project Filter */}
       <div className="flex gap-2 flex-wrap">
-        {categories.map((category) => (
+        <Button
+          variant={selectedProject === "All" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setSelectedProject("All")}
+        >
+          Semua Proyek
+        </Button>
+        {projects.map((project) => (
           <Button
-            key={category}
-            variant={selectedCategory === category ? "default" : "outline"}
+            key={project.id}
+            variant={selectedProject === project.id ? "default" : "outline"}
             size="sm"
-            onClick={() => setSelectedCategory(category)}
+            onClick={() => setSelectedProject(project.id)}
           >
-            {category}
+            {project.name}
           </Button>
         ))}
       </div>
 
       {/* Documents Grid */}
-      <div className="grid grid-cols-1 gap-4">
-        {filteredDocuments.map((doc) => (
-          <Card key={doc.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                {getFileIcon(doc.type)}
+      {isLoading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="text-slate-500">Memuat dokumen...</div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {filteredDocuments.map((doc) => (
+            <Card key={doc.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  {getFileIcon(doc.mimeType)}
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold text-slate-900 truncate">
-                        {doc.name}
-                      </h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        {getCategoryBadge(doc.category)}
-                        <span className="text-sm text-slate-500">{doc.version}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-semibold text-slate-900 truncate">
+                          {doc.name}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge className="bg-blue-100 text-blue-700">
+                            {getFileType(doc.mimeType)}
+                          </Badge>
+                          <span className="text-sm text-slate-500">{doc.fileName}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-4">
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">Proyek</p>
+                        <p className="text-sm font-medium text-slate-900">
+                          {doc.project.name}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">Ukuran</p>
+                        <p className="text-sm font-medium text-slate-900">
+                          {formatFileSize(doc.fileSize)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">Diupload oleh</p>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-6 w-6">
+                            <AvatarImage src={doc.uploadedBy.image || undefined} />
+                            <AvatarFallback className="text-xs">
+                              {doc.uploadedBy.name?.charAt(0) || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <p className="text-sm font-medium text-slate-900">
+                            {doc.uploadedBy.name}
+                          </p>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">Tanggal Upload</p>
+                        <p className="text-sm font-medium text-slate-900">
+                          {new Date(doc.uploadedAt).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => window.open(doc.url, '_blank')}
+                        >
+                          <svg
+                            className="w-4 h-4 mr-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                            />
+                          </svg>
+                          Download
+                        </Button>
+                        {(session?.user?.role === 'ADMIN' || 
+                          session?.user?.role === 'MANAGER' || 
+                          session?.user?.id === doc.uploadedBy.id) && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDelete(doc.id)}
+                          >
+                            <svg
+                              className="w-4 h-4 text-red-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-4">
-                    <div>
-                      <p className="text-xs text-slate-500 mb-1">Proyek</p>
-                      <p className="text-sm font-medium text-slate-900">
-                        {doc.project}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500 mb-1">Ukuran</p>
-                      <p className="text-sm font-medium text-slate-900">{doc.size}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500 mb-1">Diupload oleh</p>
-                      <p className="text-sm font-medium text-slate-900">
-                        {doc.uploadedBy}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500 mb-1">Tanggal Upload</p>
-                      <p className="text-sm font-medium text-slate-900">
-                        {new Date(doc.uploadDate).toLocaleDateString("id-ID", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <svg
-                          className="w-4 h-4 mr-1"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                          />
-                        </svg>
-                        Download
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                          />
-                        </svg>
-                      </Button>
-                    </div>
-                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Empty State */}
-      {filteredDocuments.length === 0 && (
+      {!isLoading && filteredDocuments.length === 0 && (
         <Card>
           <CardContent className="py-12 text-center">
             <svg

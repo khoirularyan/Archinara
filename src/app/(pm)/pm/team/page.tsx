@@ -30,7 +30,7 @@ type TeamMember = {
   name: string | null
   email: string
   username: string | null
-  role: "ADMIN" | "MANAGER" | "ARCHITECT" | "USER"
+  role: "ADMIN" | "MANAGER" | "ARCHITECT" | "DRAFTER" | "USER"
   image: string | null
   isTempPassword: boolean
   createdAt: string
@@ -168,6 +168,7 @@ export default function TeamPage() {
       ADMIN: { label: "Admin", className: "bg-red-100 text-red-700 hover:bg-red-100" },
       MANAGER: { label: "Manager", className: "bg-purple-100 text-purple-700 hover:bg-purple-100" },
       ARCHITECT: { label: "Architect", className: "bg-blue-100 text-blue-700 hover:bg-blue-100" },
+      DRAFTER: { label: "Drafter", className: "bg-green-100 text-green-700 hover:bg-green-100" },
       USER: { label: "User", className: "bg-gray-100 text-gray-700 hover:bg-gray-100" },
     }
     
@@ -258,6 +259,7 @@ export default function TeamPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="USER">User</SelectItem>
+                  <SelectItem value="DRAFTER">Drafter</SelectItem>
                   <SelectItem value="ARCHITECT">Architect</SelectItem>
                   <SelectItem value="MANAGER">Manager</SelectItem>
                   <SelectItem value="ADMIN">Admin</SelectItem>
@@ -439,6 +441,36 @@ export default function TeamPage() {
                     strokeLinejoin="round"
                     strokeWidth={2}
                     d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  />
+                </svg>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-2">
+                  Drafter
+                </p>
+                <h3 className="text-3xl font-bold text-slate-900">
+                  {isLoading ? "..." : teamMembers.filter(m => m.role === "DRAFTER").length}
+                </h3>
+              </div>
+              <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                   />
                 </svg>
               </div>

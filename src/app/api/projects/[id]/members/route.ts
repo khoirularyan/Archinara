@@ -140,8 +140,8 @@ export async function POST(
             userId: memberUserId,
             title: 'Ditambahkan ke Project',
             message: `Anda telah ditambahkan sebagai ${memberRole || 'MEMBER'} di project "${project.name}"`,
-            type: 'INFO',
-            read: false
+            type: 'PROJECT',
+            isRead: false
         }
       })
     } catch (notifError) {

@@ -1,25 +1,34 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+// Check if Supabase is configured
+const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey)
+
+if (!isSupabaseConfigured) {
+  console.warn('⚠️ Supabase credentials not configured. Document upload will not work.')
+  console.warn('Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env')
 }
 
 // Client untuk frontend (dengan RLS)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = isSupabaseConfigured 
+  ? createClient(supabaseUrl!, supabaseAnonKey!)
+  : null
 
 // Admin client untuk backend (bypass RLS)
-export const supabaseAdmin = supabaseServiceKey
-  ? createClient(supabaseUrl, supabaseServiceKey, {
+export const supabaseAdmin = isSupabaseConfigured && supabaseServiceKey
+  ? createClient(supabaseUrl!, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false
       }
     })
   : supabase // Fallback ke client biasa jika tidak ada service key
+
+// Export configuration status
+export { isSupabaseConfigured }
 
 /**
  * Upload file to Supabase Storage
@@ -33,6 +42,13 @@ export async function uploadToSupabase(
   bucket: string = 'avatars',
   folder?: string
 ): Promise<string> {
+  // Check if Supabase is configured
+  if (!isSupabaseConfigured || !supabaseAdmin) {
+    throw new Error(
+      'Supabase is not configured. Please set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY in your .env file. See docs/SUPABASE_SETUP.md for setup instructions.'
+    )
+  }
+
   const bytes = await file.arrayBuffer()
   const buffer = Buffer.from(bytes)
 
@@ -73,6 +89,11 @@ export async function deleteFromSupabase(
   url: string,
   bucket: string = 'avatars'
 ): Promise<void> {
+  // Check if Supabase is configured
+  if (!isSupabaseConfigured || !supabaseAdmin) {
+    throw new Error('Supabase is not configured')
+  }
+
   // Extract path from URL
   const urlObj = new URL(url)
   const pathParts = urlObj.pathname.split('/')
