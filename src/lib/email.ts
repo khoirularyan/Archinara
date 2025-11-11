@@ -5,7 +5,17 @@ const EMAIL_SERVER_PORT = parseInt(process.env.EMAIL_SERVER_PORT || '587')
 const EMAIL_SERVER_USER = process.env.EMAIL_SERVER_USER || ''
 const EMAIL_SERVER_PASSWORD = process.env.EMAIL_SERVER_PASSWORD || ''
 const EMAIL_FROM = process.env.EMAIL_FROM || 'Archinara PM <noreply@archinara.tech>'
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+// Gunakan NEXT_PUBLIC_APP_URL dari environment variable atau ambil dari window.location jika di client-side
+const getAppUrl = () => {
+  // Jika di server-side, gunakan NEXT_PUBLIC_APP_URL atau default ke production URL
+  if (typeof window === 'undefined') {
+    return process.env.NEXT_PUBLIC_APP_URL || 'https://www.archinara.tech';
+  }
+  // Jika di client-side, gunakan origin dari window.location
+  return window.location.origin;
+};
+
+const APP_URL = getAppUrl();
 
 if (!EMAIL_SERVER_USER || !EMAIL_SERVER_PASSWORD) {
   console.warn('[Email] Warning: Gmail SMTP credentials not set. Email sending will fail.')
